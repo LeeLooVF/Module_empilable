@@ -130,6 +130,17 @@
           <span class="text-[11px] font-mono text-slate-400">mm</span>
         </div>
 
+        <!-- Slot Length Customization -->
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-medium text-slate-300">Longueur fentes :</label>
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+            <button onclick="stepInput('inp-slot-len', -2)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">−</button>
+            <input type="number" id="inp-slot-len" value="60.6" min="30" max="80" step="1" onchange="updateAll()" class="w-14 bg-transparent text-center font-mono text-xs font-bold text-sky-400 focus:outline-none">
+            <button onclick="stepInput('inp-slot-len', 2)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">+</button>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">mm</span>
+        </div>
+
         <!-- Locking Lug Height -->
         <div class="flex items-center gap-1.5">
           <label class="text-xs font-medium text-slate-300">Hauteur Tenons :</label>
@@ -313,6 +324,7 @@
       lugH: 4.5,           // Hauteur des tenons d'empilement (mm)
       plateL: 110,         // Longueur du plateau qui traverse les 2 fentes (110 mm = 11 cm)
       plateW: 60,          // Largeur du plateau (60 mm = 6 cm)
+      slotLenCustom: 60.6, // Longueur personnalisable des fentes
       clearance: 0.6,      // Jeu dans les fentes (mm)
       visualMode: 'single',// 'single' | 'stack' | 'exploded'
       plateSlide: 85,      // 0..100 %
@@ -325,19 +337,16 @@
       const t = state.woodT;
       const play = state.clearance;
 
-      // Pour que le plateau de 110 mm traverse et repose dans les DEUX fentes opposées (gauche et droite),
-      // la largeur extérieure du caisson (extL) est égale à la longueur du rectangle du plateau (110 mm).
-      // Ainsi, quand le plateau est inséré à fond (jusqu'au col du médaillon), il occupe toute la largeur
-      // extérieure (de x = 0 à x = 110 mm), reposant sur toute l'épaisseur t de la fente droite ET de la fente gauche !
+      // Pour que le plateau traverse et repose dans les DEUX fentes opposées
       const extL = +state.plateL.toFixed(1);              // 110 mm
-      const innerL = +(extL - 2 * t).toFixed(1);          // 104 mm (ouverture centrale de passage du Père Noël)
+      const innerL = +(extL - 2 * t).toFixed(1);          // 104 mm
 
-      // Largeur intérieure et extérieure (sens des 60 mm du plateau)
+      // Largeur intérieure et extérieure
       const innerW = +(state.plateW + 1.2).toFixed(1);    // 61.2 mm
       const extW = +(innerW + 2 * t).toFixed(1);          // 67.2 mm (en bois 3mm)
 
-      // Dimensions des 2 fentes opposées (Flanc Gauche + Flanc Droit)
-      const slotW = +(state.plateW + play).toFixed(1);    // 60.6 mm
+      // Dimensions des 2 fentes opposées avec option personnalisable de longueur
+      const slotW = +Math.min(extW - 4, Math.max(20, state.slotLenCustom)).toFixed(1);
       const slotH = +(t + 0.5).toFixed(1);                // 3.5 mm (en bois 3mm)
 
       // Hauteur utile d'un anneau et hauteur totale avec tenons d'empilement
@@ -437,6 +446,7 @@
       state.lockType = document.getElementById('select-lock-type').value;
       state.woodT = Math.max(2, Math.min(6, parseFloat(document.getElementById('inp-wood').value) || 3.0));
       state.ringH = Math.max(16, Math.min(35, parseFloat(document.getElementById('inp-ring-h').value) || 22));
+      state.slotLenCustom = Math.max(20, Math.min(90, parseFloat(document.getElementById('inp-slot-len').value) || 60.6));
       state.lugH = Math.max(3, Math.min(8, parseFloat(document.getElementById('inp-lug-h').value) || 4.5));
       state.plateL = Math.max(80, Math.min(140, parseFloat(document.getElementById('inp-plate-l').value) || 110));
       state.plateW = Math.max(40, Math.min(90, parseFloat(document.getElementById('inp-plate-w').value) || 60));

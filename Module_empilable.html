@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Empilable du Conduit — Double Fente Traversante & Sans Rail (xTool S1)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0d1017;
+      color: #f3f4f6;
+      overflow-x: hidden;
+    }
+    .blueprint-grid {
+      background-color: #111622;
+      background-image:
+        linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(to right, rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+      background-size: 16px 16px, 16px 16px, 80px 80px, 80px 80px;
+    }
+    .cad-paper {
+      background-color: #ffffff;
+      background-image:
+        linear-gradient(to right, rgba(203, 213, 225, 0.6) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(203, 213, 225, 0.6) 1px, transparent 1px),
+        linear-gradient(to right, rgba(148, 163, 184, 0.45) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.45) 1px, transparent 1px);
+      background-size: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
+    }
+    input[type="range"] {
+      accent-color: #f59e0b;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+
+  <!-- TOP HEADER -->
+  <header class="bg-[#141824]/95 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40 px-4 lg:px-6 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-900/30 border border-amber-400/30">
+          <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">
+              Module Empilable du Conduit — Double Fente Traversante (Sans Rail)
+            </h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/15 text-sky-300 border border-sky-500/30">
+              4 Parois Seules • 2 Fentes Opposées
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">
+            Le plateau traverse le module et repose directement dans les 2 fentes latérales opposées (aucun rail interne à coller)
+          </p>
+        </div>
+      </div>
+
+      <!-- Real-Time Key Specs Badges -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="bg-slate-900 border border-slate-700/80 rounded-lg px-3 py-1.5 flex items-center gap-2">
+          <span class="text-[11px] uppercase text-slate-400">Extérieur Module :</span>
+          <span id="badge-ext-dim" class="text-xs font-mono font-bold text-amber-400">110 × 67.2 × 22 mm</span>
+        </div>
+        <div class="bg-slate-900 border border-slate-700/80 rounded-lg px-3 py-1.5 flex items-center gap-2">
+          <span class="text-[11px] uppercase text-slate-400">2× Fentes Opposées :</span>
+          <span id="badge-slot-dim" class="text-xs font-mono font-bold text-sky-400">60.6 × 3.5 mm</span>
+        </div>
+        <div class="bg-slate-900 border border-emerald-500/30 rounded-lg px-3 py-1.5 flex items-center gap-2">
+          <span class="text-[11px] uppercase text-slate-400">Pièces / Module :</span>
+          <span class="text-xs font-mono font-bold text-emerald-400">4 parois (0 rail)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PARAMETRIC CONTROLS BAR -->
+  <section class="bg-[#181d2c] border-b border-slate-800 px-4 lg:px-6 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+        <!-- Stacking System Type -->
+        <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1.5 rounded-xl">
+          <label for="select-lock-type" class="text-xs font-semibold text-amber-300 whitespace-nowrap">
+            Verrouillage d'empilement :
+          </label>
+          <select id="select-lock-type" onchange="updateAll()" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold text-white focus:outline-none focus:border-amber-400">
+            <option value="tenons">Tenons Hauts + Encoches Basses (4 faces auto-bloquantes)</option>
+            <option value="skirt">Bords lisses (pour guidage externe)</option>
+          </select>
+        </div>
+
+        <!-- Wood Thickness -->
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-medium text-slate-300">Bois :</label>
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+            <button onclick="stepInput('inp-wood', -0.5)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">−</button>
+            <input type="number" id="inp-wood" value="3.0" min="2.0" max="6.0" step="0.1" onchange="updateAll()" class="w-12 bg-transparent text-center font-mono text-xs font-bold text-sky-400 focus:outline-none">
+            <button onclick="stepInput('inp-wood', 0.5)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">+</button>
+          </div>
+          <button onclick="setVal('inp-wood', 3.0)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-mono text-slate-300 border border-slate-700">3mm</button>
+          <button onclick="setVal('inp-wood', 6.0)" class="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-[10px] font-mono text-slate-300 border border-slate-700">6mm</button>
+        </div>
+
+        <!-- Useful Height of 1 Ring -->
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-medium text-slate-300">Hauteur / module :</label>
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+            <button onclick="stepInput('inp-ring-h', -2)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">−</button>
+            <input type="number" id="inp-ring-h" value="22" min="16" max="35" step="1" onchange="updateAll()" class="w-12 bg-transparent text-center font-mono text-xs font-bold text-amber-400 focus:outline-none">
+            <button onclick="stepInput('inp-ring-h', 2)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">+</button>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">mm</span>
+        </div>
+
+        <!-- Locking Lug Height -->
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-medium text-slate-300">Hauteur Tenons :</label>
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-lg overflow-hidden">
+            <button onclick="stepInput('inp-lug-h', -0.5)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">−</button>
+            <input type="number" id="inp-lug-h" value="4.5" min="3.0" max="8.0" step="0.5" onchange="updateAll()" class="w-12 bg-transparent text-center font-mono text-xs font-bold text-emerald-400 focus:outline-none">
+            <button onclick="stepInput('inp-lug-h', 0.5)" class="px-2 py-1 text-slate-400 hover:text-white text-xs font-bold">+</button>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">mm</span>
+        </div>
+
+        <!-- Plate Dimensions (110 x 60 mm) -->
+        <div class="flex items-center gap-1.5">
+          <label class="text-xs font-medium text-slate-300">Plateau :</label>
+          <input type="number" id="inp-plate-l" value="110" min="80" max="140" step="5" onchange="updateAll()" class="w-12 bg-slate-900 border border-slate-700 rounded py-1 text-center font-mono text-xs font-bold text-amber-300">
+          <span class="text-xs text-slate-500">×</span>
+          <input type="number" id="inp-plate-w" value="60" min="40" max="90" step="5" onchange="updateAll()" class="w-11 bg-slate-900 border border-slate-700 rounded py-1 text-center font-mono text-xs font-bold text-amber-300">
+          <span class="text-[11px] font-mono text-slate-400">mm</span>
+        </div>
+      </div>
+
+      <!-- Right: Download SVG Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="downloadModuleSVG(1)" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-lg flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Télécharger .SVG (1 Module + Plateau)
+        </button>
+        <button onclick="downloadModuleSVG(6)" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold shadow flex items-center gap-1.5 transition">
+          Planche de 6 Modules (.SVG)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN WORKSPACE -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 lg:p-6 space-y-6">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+
+      <!-- LEFT COLUMN (7 COLS): 3D ISOMETRIC INTERACTIVE STUDIO -->
+      <div class="xl:col-span-7 bg-[#141824] border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <!-- Studio Header & Mode Tabs -->
+        <div class="p-4 bg-[#191f2e] border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
+              Visuel 3D Interactif — Double Fente Traversante (Gauche + Droite)
+            </h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+              Fais glisser le plateau à $100\%$ pour voir comment il s'encastre dans les deux fentes opposées sans aucun rail
+            </p>
+          </div>
+
+          <!-- 3 Interactive Visual Modes -->
+          <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800 gap-1">
+            <button onclick="setVisualMode('single')" id="btn-vis-single" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-amber-500 text-slate-950 shadow">
+              1. Pièce Seule (2 Fentes)
+            </button>
+            <button onclick="setVisualMode('stack')" id="btn-vis-stack" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white">
+              2. Empilement (×2 Modules)
+            </button>
+            <button onclick="setVisualMode('exploded')" id="btn-vis-exploded" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white">
+              3. Vue Éclatée (4 parois)
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Simulation Sliders -->
+        <div class="px-4 py-3 bg-[#111520] border-b border-slate-800/80 grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+          <!-- Control 1: Slide the plate across both slots -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <div class="flex justify-between text-[11px] mb-1">
+              <span class="font-semibold text-amber-300">Insertion dans les 2 fentes :</span>
+              <span id="lbl-plate-slide" class="font-mono text-white">Inséré (85%)</span>
+            </div>
+            <input type="range" id="slider-plate" min="0" max="100" value="85" oninput="onSimSlider()" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Control 2: Stack upper module down onto lower module -->
+          <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5">
+            <div class="flex justify-between text-[11px] mb-1">
+              <span class="font-semibold text-emerald-300">Emboîtement Module N+1 :</span>
+              <span id="lbl-stack-gap" class="font-mono text-white">Écarté</span>
+            </div>
+            <input type="range" id="slider-stack" min="0" max="100" value="35" oninput="onSimSlider()" class="w-full h-1.5 bg-slate-700 rounded-lg cursor-pointer">
+          </div>
+
+          <!-- Control 3: Insertion Side Switch -->
+          <div class="flex flex-col gap-1.5 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer select-none text-slate-200 bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-2">
+              <input type="checkbox" id="chk-flip-odd" onchange="render3DVisual()" class="rounded text-sky-500 focus:ring-0">
+              <span>Insérer le plateau par la <strong>Gauche</strong> (Jours Pairs 2, 4...)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3D Isometric SVG Canvas -->
+        <div class="relative flex-1 min-h-[490px] blueprint-grid flex items-center justify-center p-4 select-none overflow-hidden">
+          <div id="iso-canvas-container" class="w-full h-full flex items-center justify-center"></div>
+
+          <!-- Floating Callout Legend -->
+          <div class="absolute bottom-3 left-3 right-3 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="flex items-center gap-1.5 text-sky-300 font-medium">
+                <span class="w-3 h-3 rounded bg-sky-500/30 border border-sky-400"></span>
+                2× Fentes opposées (Maintien traversant Gauche + Droite)
+              </span>
+              <span class="flex items-center gap-1.5 text-emerald-300 font-medium">
+                <span class="w-3 h-3 rounded bg-emerald-500/30 border border-emerald-400"></span>
+                Tenons supérieurs (Verrouillage Mâle)
+              </span>
+              <span class="flex items-center gap-1.5 text-rose-300 font-medium">
+                <span class="w-3 h-3 rounded bg-rose-500/30 border border-rose-400"></span>
+                Encoches basses (Verrouillage Femelle)
+              </span>
+            </div>
+            <button onclick="triggerDemoAnimation()" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow">
+              ▶ Animer l'emboîtement + passage dans les 2 fentes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (5 COLS): LASER CUTTING PLAN (.SVG 1:1) OF THIS MODULE -->
+      <div class="xl:col-span-5 bg-[#141824] border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div class="p-4 bg-[#191f2e] border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg>
+              Plan de Découpe Laser à Plat d'UN Module (.SVG 1:1)
+            </h2>
+            <p class="text-[11px] text-slate-400 mt-0.5">
+              Seulement 4 parois (2 longues identiques + 2 flancs à fente identiques) + 1 plateau
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="px-2 py-0.5 rounded bg-red-500/15 border border-red-500/30 text-red-400 font-mono text-[10px]">#FF0000 Découpe</span>
+            <span class="px-2 py-0.5 rounded bg-blue-500/15 border border-blue-500/30 text-blue-400 font-mono text-[10px]">#0000FF Gravure</span>
+          </div>
+        </div>
+
+        <!-- Flat CAD Preview Canvas -->
+        <div class="flex-1 min-h-[420px] cad-paper p-4 flex items-center justify-center overflow-auto">
+          <div id="cad-single-module-container" class="w-full h-full flex items-center justify-center"></div>
+        </div>
+
+        <!-- Engineering Explanation Box -->
+        <div class="p-4 bg-[#111520] border-t border-slate-800 space-y-2.5 text-xs">
+          <div class="font-bold text-sky-400 flex items-center gap-1.5">
+            <span>✨</span> Les avantages de ta modification (Double Fente & Sans Rail) :
+          </div>
+          <ul class="space-y-1.5 text-slate-300 leading-relaxed">
+            <li>
+              • <strong>Maintien en pont sur les 2 fentes opposées :</strong> Le plateau de $11 \times 6\text{ cm}$ entre par la fente d'un flanc, traverse le vide central et son extrémité opposée vient se loger directement dans la <strong>seconde fente en face</strong>. Il est tenu des deux côtés et ne peut jamais basculer sous le poids du Père Noël.
+            </li>
+            <li>
+              • <strong>Zéro rail interne à découper ni à coller :</strong> Chaque module ne comporte plus que <strong>4 parois</strong> ($2\times$ Parois Avant/Arrière identiques + $2\times$ Flancs à Fente identiques), soit <strong>48 petites pièces en moins</strong> à coller sur l'ensemble des 24 étages !
+            </li>
+            <li>
+              • <strong>100 % ambidextre sans même retourner le module :</strong> Comme la fente est présente à gauche ET à droite sur chaque étage, tu peux glisser les plateaux impairs ($1, 3, 5\dots$) par la droite et les plateaux pairs ($2, 4, 6\dots$) par la gauche.
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold">
+    <span id="toast-text">Fichier .SVG prêt !</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE & GEOMETRY ENGINE (DOUBLE SLOT & NO INTERNAL RAILS)
+    // =========================================================================
+    const state = {
+      lockType: 'tenons',  // 'tenons' or 'skirt'
+      woodT: 3.0,          // Épaisseur du bois (mm)
+      ringH: 22,           // Hauteur utile d'un étage (mm)
+      lugH: 4.5,           // Hauteur des tenons d'empilement (mm)
+      plateL: 110,         // Longueur du plateau qui traverse les 2 fentes (110 mm = 11 cm)
+      plateW: 60,          // Largeur du plateau (60 mm = 6 cm)
+      clearance: 0.6,      // Jeu dans les fentes (mm)
+      visualMode: 'single',// 'single' | 'stack' | 'exploded'
+      plateSlide: 85,      // 0..100 %
+      stackProgress: 35,   // 0..100 %
+      flipOdd: false,      // false = insertion par la droite, true = insertion par la gauche
+      animTimer: null
+    };
+
+    function getModuleSpecs() {
+      const t = state.woodT;
+      const play = state.clearance;
+
+      // Pour que le plateau de 110 mm traverse et repose dans les DEUX fentes opposées (gauche et droite),
+      // la largeur extérieure du caisson (extL) est égale à la longueur du rectangle du plateau (110 mm).
+      // Ainsi, quand le plateau est inséré à fond (jusqu'au col du médaillon), il occupe toute la largeur
+      // extérieure (de x = 0 à x = 110 mm), reposant sur toute l'épaisseur t de la fente droite ET de la fente gauche !
+      const extL = +state.plateL.toFixed(1);              // 110 mm
+      const innerL = +(extL - 2 * t).toFixed(1);          // 104 mm (ouverture centrale de passage du Père Noël)
+
+      // Largeur intérieure et extérieure (sens des 60 mm du plateau)
+      const innerW = +(state.plateW + 1.2).toFixed(1);    // 61.2 mm
+      const extW = +(innerW + 2 * t).toFixed(1);          // 67.2 mm (en bois 3mm)
+
+      // Dimensions des 2 fentes opposées (Flanc Gauche + Flanc Droit)
+      const slotW = +(state.plateW + play).toFixed(1);    // 60.6 mm
+      const slotH = +(t + 0.5).toFixed(1);                // 3.5 mm (en bois 3mm)
+
+      // Hauteur utile d'un anneau et hauteur totale avec tenons d'empilement
+      const ringH = state.ringH;
+      const lugH = state.lugH;
+      const totalWallH = +(ringH + lugH).toFixed(1);
+
+      // Position verticale des 2 fentes (au milieu de la hauteur utile)
+      const slotCenterY = ringH * 0.5;
+
+      return {
+        t, play,
+        plateL: state.plateL,
+        plateW: state.plateW,
+        innerL, innerW,
+        extL, extW,
+        slotW, slotH,
+        ringH, lugH, totalWallH,
+        slotCenterY,
+        stack24Cm: ((24 * ringH) / 10).toFixed(1)
+      };
+    }
+
+    // =========================================================================
+    // UI HANDLERS
+    // =========================================================================
+    function stepInput(id, delta) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let v = parseFloat(el.value) + delta;
+      if (el.min !== '') v = Math.max(parseFloat(el.min), v);
+      if (el.max !== '') v = Math.min(parseFloat(el.max), v);
+      el.value = Number.isInteger(delta) ? Math.round(v) : v.toFixed(1);
+      updateAll();
+    }
+
+    function setVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = val.toFixed(1);
+        updateAll();
+      }
+    }
+
+    function setVisualMode(mode) {
+      state.visualMode = mode;
+      ['single', 'stack', 'exploded'].forEach(m => {
+        const btn = document.getElementById(`btn-vis-${m}`);
+        if (!btn) return;
+        btn.className = (m === mode)
+          ? "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-amber-500 text-slate-950 shadow"
+          : "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white";
+      });
+      render3DVisual();
+    }
+
+    function onSimSlider() {
+      state.plateSlide = parseFloat(document.getElementById('slider-plate').value) || 0;
+      state.stackProgress = parseFloat(document.getElementById('slider-stack').value) || 0;
+
+      document.getElementById('lbl-plate-slide').textContent =
+        state.plateSlide === 0 ? 'Sorti (0%)' :
+        state.plateSlide >= 98 ? 'Logé dans les 2 fentes (100%)' : `${Math.round(state.plateSlide)}%`;
+
+      document.getElementById('lbl-stack-gap').textContent =
+        state.stackProgress >= 98 ? 'Verrouillé !' : `${Math.round(state.stackProgress)}%`;
+
+      render3DVisual();
+    }
+
+    function triggerDemoAnimation() {
+      if (state.animTimer) {
+        clearInterval(state.animTimer);
+        state.animTimer = null;
+      }
+      setVisualMode('stack');
+      state.plateSlide = 0;
+      state.stackProgress = 0;
+      let step = 0;
+      state.animTimer = setInterval(() => {
+        step += 1;
+        if (step <= 25) {
+          state.stackProgress = step * 4;
+        } else if (step <= 55) {
+          state.plateSlide = Math.min(100, (step - 25) * 3.4);
+        } else {
+          clearInterval(state.animTimer);
+          state.animTimer = null;
+        }
+        document.getElementById('slider-stack').value = state.stackProgress;
+        document.getElementById('slider-plate').value = state.plateSlide;
+        onSimSlider();
+      }, 30);
+    }
+
+    function updateAll() {
+      state.lockType = document.getElementById('select-lock-type').value;
+      state.woodT = Math.max(2, Math.min(6, parseFloat(document.getElementById('inp-wood').value) || 3.0));
+      state.ringH = Math.max(16, Math.min(35, parseFloat(document.getElementById('inp-ring-h').value) || 22));
+      state.lugH = Math.max(3, Math.min(8, parseFloat(document.getElementById('inp-lug-h').value) || 4.5));
+      state.plateL = Math.max(80, Math.min(140, parseFloat(document.getElementById('inp-plate-l').value) || 110));
+      state.plateW = Math.max(40, Math.min(90, parseFloat(document.getElementById('inp-plate-w').value) || 60));
+
+      const s = getModuleSpecs();
+      document.getElementById('badge-ext-dim').textContent = `${s.extL} × ${s.extW} × ${s.ringH} mm`;
+      document.getElementById('badge-slot-dim').textContent = `${s.slotW} × ${s.slotH} mm`;
+
+      render3DVisual();
+      renderFlatCAD();
+    }
+
+    // =========================================================================
+    // ISOMETRIC 3D PROJECTION HELPER
+    // =========================================================================
+    function isoPoint(x, y, z, cx, cy, scale) {
+      const angX = Math.PI / 6;   // 30 deg
+      const angY = Math.PI / 5.2; // ~34 deg
+      const px = cx + scale * (x * Math.cos(angX) + y * Math.cos(angY));
+      const py = cy + scale * (x * Math.sin(angX) - y * Math.sin(angY) - z);
+      return { x: +px.toFixed(1), y: +py.toFixed(1) };
+    }
+
+    function polyStr(pts) {
+      return pts.map(p => `${p.x},${p.y}`).join(' ');
+    }
+
+    function drawIsoPrism(x0, y0, z0, dx, dy, dz, cx, cy, scale, colors) {
+      const p000 = isoPoint(x0, y0, z0, cx, cy, scale);
+      const p100 = isoPoint(x0 + dx, y0, z0, cx, cy, scale);
+      const p110 = isoPoint(x0 + dx, y0 + dy, z0, cx, cy, scale);
+      const p010 = isoPoint(x0, y0 + dy, z0, cx, cy, scale);
+
+      const p001 = isoPoint(x0, y0, z0 + dz, cx, cy, scale);
+      const p101 = isoPoint(x0 + dx, y0, z0 + dz, cx, cy, scale);
+      const p111 = isoPoint(x0 + dx, y0 + dy, z0 + dz, cx, cy, scale);
+      const p011 = isoPoint(x0, y0 + dy, z0 + dz, cx, cy, scale);
+
+      const stroke = colors.stroke || '#451a03';
+      const sw = colors.sw || 1.2;
+
+      return `
+        <g stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round">
+          <polygon points="${polyStr([p000, p100, p101, p001])}" fill="${colors.front || '#e6c59c'}"/>
+          <polygon points="${polyStr([p100, p110, p111, p101])}" fill="${colors.right || '#d2a878'}"/>
+          <polygon points="${polyStr([p001, p101, p111, p011])}" fill="${colors.top || '#f5dfbe'}"/>
+        </g>
+      `;
+    }
+
+    // Renders one complete 3D stackable ring module with TWO OPPOSITE SLOTS and NO INTERNAL RAILS
+    function buildIsoModuleSVG(s, cx, cy, scale, zBase, options = {}) {
+      const L = s.extL;
+      const W = s.extW;
+      const H = s.ringH;
+      const t = s.t;
+      const lugH = s.lugH;
+      const lugW = 18;
+      const flip = options.flip || false; // false = plateau inséré par la droite, true = par la gauche
+      const explode = options.explode || 0;
+      const opacity = options.opacity || 1.0;
+
+      const woodTop = { front: '#ebd0ae', right: '#d7af83', top: '#f8e7cf', stroke: '#5c3418' };
+      const woodInside = { front: '#c89d70', right: '#b38659', top: '#e2c199', stroke: '#5c3418' };
+      const lugColor = { front: '#34d399', right: '#10b981', top: '#6ee7b7', stroke: '#065f46' };
+
+      let svg = `<g opacity="${opacity}">`;
+
+      const sY0 = (W - s.slotW) / 2;
+      const sZ0 = zBase + s.slotCenterY - s.slotH / 2;
+
+      // 1. FLANC GAUCHE OPPOSE (x = 0..t, y = 0..W) AVEC FENTE N°2 !
+      const exLeft = -explode;
+      svg += drawIsoPrism(exLeft, 0, zBase, t, W, H, cx, cy, scale, woodInside);
+
+      // Dessin de la FENTE N°2 sur le flanc gauche (visible de l'intérieur et de l'extérieur)
+      const lpIn1 = isoPoint(exLeft + t, sY0, sZ0, cx, cy, scale);
+      const lpIn2 = isoPoint(exLeft + t, sY0 + s.slotW, sZ0, cx, cy, scale);
+      const lpIn3 = isoPoint(exLeft + t, sY0 + s.slotW, sZ0 + s.slotH, cx, cy, scale);
+      const lpIn4 = isoPoint(exLeft + t, sY0, sZ0 + s.slotH, cx, cy, scale);
+      svg += `
+        <polygon points="${polyStr([lpIn1, lpIn2, lpIn3, lpIn4])}" fill="#090d16" stroke="#38bdf8" stroke-width="1.8"/>
+      `;
+
+      // 2. PAROI ARRIÈRE LONGUE (x = 0..L, y = W-t..W) — SANS RAIL INTERNE
+      const eyBack = explode;
+      svg += drawIsoPrism(0, W - t + eyBack, zBase, L, t, H, cx, cy, scale, woodInside);
+
+      // Tenons supérieurs sur la paroi Arrière
+      const lugX1 = L * 0.22;
+      const lugX2 = L * 0.78 - lugW;
+      if (state.lockType === 'tenons') {
+        svg += drawIsoPrism(lugX1, W - t + eyBack, zBase + H, lugW, t, lugH, cx, cy, scale, lugColor);
+        svg += drawIsoPrism(lugX2, W - t + eyBack, zBase + H, lugW, t, lugH, cx, cy, scale, lugColor);
+      }
+
+      // 3. PLATEAU JOURNALIER 11 x 6 CM (Traverse la Fente 1 ET vient se loger dans la Fente 2 en face !)
+      if (options.showPlate && state.plateSlide > 0) {
+        const slideRatio = state.plateSlide / 100;
+        const plateZ = zBase + s.slotCenterY - t / 2;
+        const plateY = (W - s.plateW) / 2;
+
+        // À 100%, le plateau (longueur L = extL) va exactement de x = 0 à x = L :
+        // il traverse donc complètement la fente droite (L-t..L) ET la fente gauche (0..t) !
+        const startX = flip ? (-s.plateL + 12) : (L - 12);
+        const endX = 0;
+        const curX = startX + (endX - startX) * slideRatio;
+
+        const plateColors = { front: '#fde68a', right: '#f59e0b', top: '#fef3c7', stroke: '#b45309', sw: 1.4 };
+        svg += drawIsoPrism(curX, plateY, plateZ, s.plateL, s.plateW, t, cx, cy, scale, plateColors);
+
+        // Surbrillance verte/bleue de l'extrémité du plateau lorsqu'elle est engagée dans la fente opposée
+        if (slideRatio > 0.92) {
+          const tipX = flip ? (curX + s.plateL - t) : curX;
+          const tipColors = { front: '#7dd3fc', right: '#38bdf8', top: '#bae6fd', stroke: '#0284c7', sw: 1.5 };
+          svg += drawIsoPrism(tipX, plateY, plateZ, t, s.plateW, t, cx, cy, scale, tipColors);
+        }
+
+        // Médaillon rond numéroté au bout extérieur du plateau
+        const medX = flip ? (curX - 11) : (curX + s.plateL + 11);
+        const medCenter = isoPoint(medX, W / 2, plateZ + t, cx, cy, scale);
+        svg += `
+          <ellipse cx="${medCenter.x}" cy="${medCenter.y}" rx="${11 * scale * 0.9}" ry="${11 * scale * 0.55}" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+          <text x="${medCenter.x}" y="${medCenter.y + 3}" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" font-weight="800" fill="#7c2d12">${flip ? '2' : '1'}</text>
+        `;
+      }
+
+      // 4. PAROI AVANT LONGUE (x = 0..L, y = 0..t) — SANS RAIL INTERNE
+      const eyFront = -explode;
+      svg += drawIsoPrism(0, eyFront, zBase, L, t, H, cx, cy, scale, woodTop);
+
+      // Tenons supérieurs et encoches basses sur la paroi Avant
+      if (state.lockType === 'tenons') {
+        svg += drawIsoPrism(lugX1, eyFront, zBase + H, lugW, t, lugH, cx, cy, scale, lugColor);
+        svg += drawIsoPrism(lugX2, eyFront, zBase + H, lugW, t, lugH, cx, cy, scale, lugColor);
+
+        const n1a = isoPoint(lugX1, eyFront, zBase, cx, cy, scale);
+        const n1b = isoPoint(lugX1 + lugW, eyFront, zBase, cx, cy, scale);
+        const n1c = isoPoint(lugX1 + lugW, eyFront, zBase + lugH, cx, cy, scale);
+        const n1d = isoPoint(lugX1, eyFront, zBase + lugH, cx, cy, scale);
+
+        const n2a = isoPoint(lugX2, eyFront, zBase, cx, cy, scale);
+        const n2b = isoPoint(lugX2 + lugW, eyFront, zBase, cx, cy, scale);
+        const n2c = isoPoint(lugX2 + lugW, eyFront, zBase + lugH, cx, cy, scale);
+        const n2d = isoPoint(lugX2, eyFront, zBase + lugH, cx, cy, scale);
+
+        svg += `
+          <polygon points="${polyStr([n1a, n1b, n1c, n1d])}" fill="#1e1b2e" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="3,1.5"/>
+          <polygon points="${polyStr([n2a, n2b, n2c, n2d])}" fill="#1e1b2e" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="3,1.5"/>
+        `;
+      }
+
+      // 5. FLANC DROIT (x = L-t..L, y = 0..W) AVEC FENTE N°1 !
+      const exRight = explode;
+      svg += drawIsoPrism(L - t + exRight, 0, zBase, t, W, H, cx, cy, scale, woodTop);
+
+      // Dessin de la FENTE N°1 sur ce petit côté droit
+      const fp1 = isoPoint(L + exRight, sY0, sZ0, cx, cy, scale);
+      const fp2 = isoPoint(L + exRight, sY0 + s.slotW, sZ0, cx, cy, scale);
+      const fp3 = isoPoint(L + exRight, sY0 + s.slotW, sZ0 + s.slotH, cx, cy, scale);
+      const fp4 = isoPoint(L + exRight, sY0, sZ0 + s.slotH, cx, cy, scale);
+      svg += `
+        <polygon points="${polyStr([fp1, fp2, fp3, fp4])}" fill="#090d16" stroke="#38bdf8" stroke-width="1.8"/>
+      `;
+
+      // Tenons sur les 2 flancs courts
+      if (state.lockType === 'tenons') {
+        const sideLugW = 14;
+        const sideLugY = (W - sideLugW) / 2;
+        svg += drawIsoPrism(L - t + exRight, sideLugY, zBase + H, t, sideLugW, lugH, cx, cy, scale, lugColor);
+        svg += drawIsoPrism(exLeft, sideLugY, zBase + H, t, sideLugW, lugH, cx, cy, scale, lugColor);
+      }
+
+      svg += `</g>`;
+      return svg;
+    }
+
+    function render3DVisual() {
+      state.flipOdd = document.getElementById('chk-flip-odd')?.checked === true;
+
+      const s = getModuleSpecs();
+      const container = document.getElementById('iso-canvas-container');
+      if (!container) return;
+
+      const cx = 300;
+      const cy = 285;
+      const scale = 2.65;
+
+      let sceneSVG = '';
+
+      if (state.visualMode === 'single') {
+        sceneSVG += buildIsoModuleSVG(s, cx, cy, scale, 0, {
+          flip: state.flipOdd,
+          explode: 0,
+          showPlate: true
+        });
+
+        // Callout arrows & labels for BOTH slots (Left & Right)
+        const rightSlotPt = isoPoint(s.extL, s.extW / 2, s.slotCenterY, cx, cy, scale);
+        const leftSlotPt = isoPoint(s.t, s.extW * 0.65, s.slotCenterY, cx, cy, scale);
+        const topLugPt = isoPoint(s.extL * 0.25, 0, s.ringH + s.lugH, cx, cy, scale);
+        const botNotchPt = isoPoint(s.extL * 0.25, 0, 1, cx, cy, scale);
+
+        sceneSVG += `
+          <g font-family="Inter, sans-serif" font-size="11.5" font-weight="600">
+            <!-- Callout 1: Fente Droite (N°1) -->
+            <line x1="${rightSlotPt.x}" y1="${rightSlotPt.y}" x2="${rightSlotPt.x + 55}" y2="${rightSlotPt.y + 24}" stroke="#38bdf8" stroke-width="1.6"/>
+            <circle cx="${rightSlotPt.x}" cy="${rightSlotPt.y}" r="3.5" fill="#38bdf8"/>
+            <rect x="${rightSlotPt.x + 35}" y="${rightSlotPt.y + 24}" width="195" height="36" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/>
+            <text x="${rightSlotPt.x + 132}" y="${rightSlotPt.y + 39}" text-anchor="middle" fill="#38bdf8">Fente Droite N°1 (${s.slotW}×${s.slotH}mm)</text>
+            <text x="${rightSlotPt.x + 132}" y="${rightSlotPt.y + 53}" text-anchor="middle" fill="#cbd5e1" font-size="10">Appui d'entrée du plateau</text>
+
+            <!-- Callout 2: Fente Gauche Opposée (N°2) -->
+            <line x1="${leftSlotPt.x}" y1="${leftSlotPt.y}" x2="${leftSlotPt.x - 55}" y2="${leftSlotPt.y - 68}" stroke="#38bdf8" stroke-width="1.6"/>
+            <circle cx="${leftSlotPt.x}" cy="${leftSlotPt.y}" r="3.5" fill="#38bdf8"/>
+            <rect x="${leftSlotPt.x - 195}" y="${leftSlotPt.y - 104}" width="210" height="36" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1.2"/>
+            <text x="${leftSlotPt.x - 90}" y="${leftSlotPt.y - 89}" text-anchor="middle" fill="#38bdf8">Fente Gauche Opposée N°2</text>
+            <text x="${leftSlotPt.x - 90}" y="${leftSlotPt.y - 75}" text-anchor="middle" fill="#cbd5e1" font-size="10">Reçoit et maintient le bout du plateau</text>
+
+            <!-- Callout 3: Tenons d'empilement hauts -->
+            <line x1="${topLugPt.x}" y1="${topLugPt.y}" x2="${topLugPt.x + 20}" y2="${topLugPt.y - 52}" stroke="#34d399" stroke-width="1.5"/>
+            <circle cx="${topLugPt.x}" cy="${topLugPt.y}" r="3.5" fill="#34d399"/>
+            <rect x="${topLugPt.x - 55}" y="${topLugPt.y - 86}" width="180" height="34" rx="6" fill="#0f172a" stroke="#34d399" stroke-width="1.2"/>
+            <text x="${topLugPt.x + 35}" y="${topLugPt.y - 71}" text-anchor="middle" fill="#34d399">Tenons supérieurs (+${s.lugH} mm)</text>
+            <text x="${topLugPt.x + 35}" y="${topLugPt.y - 58}" text-anchor="middle" fill="#cbd5e1" font-size="10">Zéro rail interne • 4 parois seules</text>
+
+            <!-- Callout 4: Encoches basses -->
+            <line x1="${botNotchPt.x}" y1="${botNotchPt.y}" x2="${botNotchPt.x - 50}" y2="${botNotchPt.y + 40}" stroke="#fb7185" stroke-width="1.5"/>
+            <circle cx="${botNotchPt.x}" cy="${botNotchPt.y}" r="3.5" fill="#fb7185"/>
+            <rect x="${botNotchPt.x - 185}" y="${botNotchPt.y + 40}" width="195" height="34" rx="6" fill="#0f172a" stroke="#fb7185" stroke-width="1.2"/>
+            <text x="${botNotchPt.x - 87}" y="${botNotchPt.y + 55}" text-anchor="middle" fill="#fb7185">Encoches basses d'emboîtement</text>
+            <text x="${botNotchPt.x - 87}" y="${botNotchPt.y + 68}" text-anchor="middle" fill="#cbd5e1" font-size="10">Verrouillage anti-glissement</text>
+          </g>
+        `;
+      } else if (state.visualMode === 'stack') {
+        const maxGap = 45;
+        const currentGap = maxGap * (1 - state.stackProgress / 100);
+        const zUpper = s.ringH + currentGap;
+
+        // Module inférieur (Jour 1 - Plateau inséré par la droite)
+        sceneSVG += buildIsoModuleSVG(s, cx, cy + 45, scale, 0, {
+          flip: false,
+          explode: 0,
+          showPlate: true
+        });
+
+        // Flèches verticales d'alignement
+        if (currentGap > 2) {
+          const pBot1 = isoPoint(s.extL * 0.22 + 9, 0, s.ringH + s.lugH, cx, cy + 45, scale);
+          const pTop1 = isoPoint(s.extL * 0.22 + 9, 0, zUpper, cx, cy + 45, scale);
+          const pBot2 = isoPoint(s.extL * 0.78 - 9, 0, s.ringH + s.lugH, cx, cy + 45, scale);
+          const pTop2 = isoPoint(s.extL * 0.78 - 9, 0, zUpper, cx, cy + 45, scale);
+          sceneSVG += `
+            <g stroke="#34d399" stroke-width="2" stroke-dasharray="4,3">
+              <line x1="${pBot1.x}" y1="${pBot1.y}" x2="${pTop1.x}" y2="${pTop1.y}"/>
+              <line x1="${pBot2.x}" y1="${pBot2.y}" x2="${pTop2.x}" y2="${pTop2.y}"/>
+            </g>
+          `;
+        }
+
+        // Module supérieur (Jour 2 - Plateau inséré par la gauche)
+        sceneSVG += buildIsoModuleSVG(s, cx, cy + 45, scale, zUpper, {
+          flip: true,
+          explode: 0,
+          showPlate: true,
+          opacity: 0.96
+        });
+      } else if (state.visualMode === 'exploded') {
+        // Vue éclatée des 4 parois (sans aucun rail)
+        sceneSVG += buildIsoModuleSVG(s, cx, cy, scale, 0, {
+          flip: state.flipOdd,
+          explode: 18,
+          showPlate: true
+        });
+      }
+
+      container.innerHTML = `
+        <svg viewBox="0 0 780 480" class="w-full h-full max-h-[480px]">
+          ${sceneSVG}
+        </svg>
+      `;
+    }
+
+    // =========================================================================
+    // 2D LASER CUTTING GENERATOR (.SVG 1:1) — 4 WALLS ONLY (NO RAILS) + 2 SLOTTED SIDES
+    // =========================================================================
+    function frontBackWallPath(x, y, s) {
+      const L = s.extL;
+      const H = s.ringH;
+      const t = s.t;
+      const lugH = s.lugH;
+      const lugW = 18;
+      const lugX1 = +(L * 0.22).toFixed(2);
+      const lugX2 = +(L * 0.78 - lugW).toFixed(2);
+      const fingerH = +(H / 3).toFixed(2);
+
+      const topBaseY = y + lugH;
+      const botBaseY = y + lugH + H;
+
+      if (state.lockType === 'tenons') {
+        return [
+          `M ${(x + t).toFixed(2)} ${topBaseY.toFixed(2)}`,
+          `H ${(x + lugX1).toFixed(2)}`,
+          `V ${y.toFixed(2)}`,
+          `H ${(x + lugX1 + lugW).toFixed(2)}`,
+          `V ${topBaseY.toFixed(2)}`,
+          `H ${(x + lugX2).toFixed(2)}`,
+          `V ${y.toFixed(2)}`,
+          `H ${(x + lugX2 + lugW).toFixed(2)}`,
+          `V ${topBaseY.toFixed(2)}`,
+          `H ${(x + L - t).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + L).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + L - t).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${(x + lugX2 + lugW + 0.15).toFixed(2)}`,
+          `V ${(botBaseY - lugH).toFixed(2)}`,
+          `H ${(x + lugX2 - 0.15).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${(x + lugX1 + lugW + 0.15).toFixed(2)}`,
+          `V ${(botBaseY - lugH).toFixed(2)}`,
+          `H ${(x + lugX1 - 0.15).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `Z`
+        ].join(' ');
+      } else {
+        return [
+          `M ${(x + t).toFixed(2)} ${topBaseY.toFixed(2)}`,
+          `H ${(x + L - t).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + L).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + L - t).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `Z`
+        ].join(' ');
+      }
+    }
+
+    function sideWallPath(x, y, s) {
+      const W = s.extW;
+      const H = s.ringH;
+      const t = s.t;
+      const lugH = s.lugH;
+      const sideLugW = 14;
+      const lugY = +((W - sideLugW) / 2).toFixed(2);
+      const fingerH = +(H / 3).toFixed(2);
+
+      const topBaseY = y + lugH;
+      const botBaseY = y + lugH + H;
+
+      if (state.lockType === 'tenons') {
+        return [
+          `M ${x.toFixed(2)} ${topBaseY.toFixed(2)}`,
+          `H ${(x + lugY).toFixed(2)}`,
+          `V ${y.toFixed(2)}`,
+          `H ${(x + lugY + sideLugW).toFixed(2)}`,
+          `V ${topBaseY.toFixed(2)}`,
+          `H ${(x + W).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + W - t).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + W).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${(x + lugY + sideLugW + 0.15).toFixed(2)}`,
+          `V ${(botBaseY - lugH).toFixed(2)}`,
+          `H ${(x + lugY - 0.15).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `Z`
+        ].join(' ');
+      } else {
+        return [
+          `M ${x.toFixed(2)} ${topBaseY.toFixed(2)}`,
+          `H ${(x + W).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${(x + W - t).toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + W).toFixed(2)}`,
+          `V ${botBaseY.toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `V ${(topBaseY + 2 * fingerH).toFixed(2)}`,
+          `H ${(x + t).toFixed(2)}`,
+          `V ${(topBaseY + fingerH).toFixed(2)}`,
+          `H ${x.toFixed(2)}`,
+          `Z`
+        ].join(' ');
+      }
+    }
+
+    function rectCut(x, y, w, h, r = 0) {
+      if (r <= 0) return `M ${x.toFixed(2)} ${y.toFixed(2)} h ${w.toFixed(2)} v ${h.toFixed(2)} h ${(-w).toFixed(2)} Z`;
+      return `M ${(x + r).toFixed(2)} ${y.toFixed(2)} h ${(w - 2 * r).toFixed(2)} a ${r} ${r} 0 0 1 ${r} ${r} v ${(h - 2 * r).toFixed(2)} a ${r} ${r} 0 0 1 ${-r} ${r} h ${(-(w - 2 * r)).toFixed(2)} a ${r} ${r} 0 0 1 ${-r} ${-r} v ${(-(h - 2 * r)).toFixed(2)} a ${r} ${r} 0 0 1 ${r} ${-r} Z`;
+    }
+
+    function slatWithMedallionPath(x, y, L, W) {
+      const rTab = 11;
+      const neckHalf = 5.5;
+      const cy = y + W / 2;
+      const neckX = x + L;
+      const tabCenterX = neckX + rTab + 2;
+      const dx = Math.sqrt(Math.max(1, rTab * rTab - neckHalf * neckHalf));
+      const joinX = (tabCenterX - dx).toFixed(2);
+      const topJoinY = (cy - neckHalf).toFixed(2);
+      const botJoinY = (cy + neckHalf).toFixed(2);
+
+      return [
+        `M ${x.toFixed(2)} ${y.toFixed(2)}`,
+        `H ${neckX.toFixed(2)}`,
+        `V ${topJoinY}`,
+        `L ${joinX} ${topJoinY}`,
+        `A ${rTab} ${rTab} 0 1 1 ${joinX} ${botJoinY}`,
+        `L ${neckX.toFixed(2)} ${botJoinY}`,
+        `V ${(y + W).toFixed(2)}`,
+        `H ${x.toFixed(2)}`,
+        `Z`
+      ].join(' ');
+    }
+
+    function generateModuleSVG(count = 1, forExport = false) {
+      const s = getModuleSpecs();
+      const cutPaths = [];
+      const scorePaths = [];
+      const labels = [];
+
+      if (count === 1) {
+        const svgW = 225;
+        const svgH = 165;
+
+        // 1. Paroi Avant (x=10, y=10) — SANS AUCUNE LIGNE DE RAIL INTERNE
+        const fx = 10, fy = 10;
+        cutPaths.push(frontBackWallPath(fx, fy, s));
+        // Briques décoratives gravées sur les montants gauche/droite
+        scorePaths.push(rectCut(fx + s.t + 3, fy + s.lugH + 3, 14, s.ringH - 6, 1.5));
+        scorePaths.push(rectCut(fx + s.extL - s.t - 17, fy + s.lugH + 3, 14, s.ringH - 6, 1.5));
+        labels.push({ x: fx + s.extL / 2, y: fy + s.lugH + s.ringH / 2 + 2, text: `1. Paroi Avant (${s.extL}×${s.totalWallH} mm)` });
+
+        // 2. Paroi Arrière (x=10, en dessous de la Paroi Avant) — SANS RAIL INTERNE
+        const bx = 10, by = fy + s.totalWallH + 10;
+        cutPaths.push(frontBackWallPath(bx, by, s));
+        labels.push({ x: bx + s.extL / 2, y: by + s.lugH + s.ringH / 2 + 2, text: `2. Paroi Arrière (${s.extL}×${s.totalWallH} mm)` });
+
+        // 3. Flanc Droit AVEC FENTE N°1 (à droite de la paroi avant)
+        const rx = fx + s.extL + 12, ry = 10;
+        cutPaths.push(sideWallPath(rx, ry, s));
+        const slotX1 = rx + (s.extW - s.slotW) / 2;
+        const slotY1 = ry + s.lugH + s.slotCenterY - s.slotH / 2;
+        cutPaths.push(rectCut(slotX1, slotY1, s.slotW, s.slotH));
+        labels.push({ x: rx + s.extW / 2, y: ry + s.totalWallH + 6, text: `3. Flanc Droit à Fente (${s.slotW}×${s.slotH}mm)` });
+
+        // 4. Flanc Gauche Opposé AVEC FENTE N°2 IDENTIQUE (en dessous du Flanc Droit)
+        const lx = rx, ly = ry + s.totalWallH + 10;
+        cutPaths.push(sideWallPath(lx, ly, s));
+        const slotX2 = lx + (s.extW - s.slotW) / 2;
+        const slotY2 = ly + s.lugH + s.slotCenterY - s.slotH / 2;
+        cutPaths.push(rectCut(slotX2, slotY2, s.slotW, s.slotH));
+        labels.push({ x: lx + s.extW / 2, y: ly + s.totalWallH + 6, text: `4. Flanc Gauche à Fente (${s.slotW}×${s.slotH}mm)` });
+
+        // 5. 1× Plateau Test Traversant (110 × 60 mm + Médaillon Ø22mm) directement en dessous
+        const px = 10, py = by + s.totalWallH + 14;
+        cutPaths.push(slatWithMedallionPath(px, py, s.plateL, s.plateW));
+        const tabCx = (px + s.plateL + 13).toFixed(2);
+        const tabCy = (py + s.plateW / 2).toFixed(2);
+        scorePaths.push(`M ${(tabCx - 8.5).toFixed(2)} ${tabCy} a 8.5 8.5 0 1 0 17 0 a 8.5 8.5 0 1 0 -17 0`);
+        labels.push({ x: px + s.plateL / 2, y: py + s.plateW / 2 + 2, text: `5. Plateau Traversant (${s.plateL} × ${s.plateW} mm)` });
+
+        return wrapSVG(svgW, svgH, cutPaths, scorePaths, labels, forExport);
+      } else {
+        // Planche de 6 modules complets (4 parois par module, 0 rail) sur format xTool S1 (485 x 310 mm)
+        const sheetW = 485, sheetH = 310;
+        for (let m = 0; m < 6; m++) {
+          const col = m % 2;
+          const row = Math.floor(m / 2);
+          const ox = 12 + col * 232;
+          const oy = 12 + row * 94;
+
+          // Paroi Avant & Paroi Arrière
+          cutPaths.push(frontBackWallPath(ox, oy, s));
+          scorePaths.push(rectCut(ox + s.t + 3, oy + s.lugH + 3, 14, s.ringH - 6, 1.5));
+          scorePaths.push(rectCut(ox + s.extL - s.t - 17, oy + s.lugH + 3, 14, s.ringH - 6, 1.5));
+
+          cutPaths.push(frontBackWallPath(ox, oy + s.totalWallH + 6, s));
+
+          // Flanc Droit (Fente 1) & Flanc Gauche (Fente 2)
+          const sx = ox + s.extL + 8;
+          cutPaths.push(sideWallPath(sx, oy, s));
+          const slotX = sx + (s.extW - s.slotW) / 2;
+          const slotY1 = oy + s.lugH + s.slotCenterY - s.slotH / 2;
+          cutPaths.push(rectCut(slotX, slotY1, s.slotW, s.slotH));
+
+          const oy2 = oy + s.totalWallH + 6;
+          cutPaths.push(sideWallPath(sx, oy2, s));
+          const slotY2 = oy2 + s.lugH + s.slotCenterY - s.slotH / 2;
+          cutPaths.push(rectCut(slotX, slotY2, s.slotW, s.slotH));
+
+          labels.push({ x: ox + s.extL / 2, y: oy + s.totalWallH / 2 + 2, text: `Module #${m + 1} (4 parois)` });
+        }
+        return wrapSVG(sheetW, sheetH, cutPaths, scorePaths, labels, forExport);
+      }
+    }
+
+    function wrapSVG(w, h, cutPaths, scorePaths, labels, forExport) {
+      const labelElements = !forExport
+        ? `<g id="APERCU_LABELS" font-family="Inter, sans-serif" font-size="5" font-weight="700" fill="#059669" text-anchor="middle">
+            ${labels.map(l => `<text x="${l.x.toFixed(1)}" y="${l.y.toFixed(1)}">${l.text}</text>`).join('\n            ')}
+           </g>`
+        : '';
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}mm" height="${h}mm" viewBox="0 0 ${w} ${h}" class="w-full h-auto max-h-[410px] border border-slate-300 rounded shadow-sm bg-white">
+        <g id="MARQUAGE_GRAVURE" fill="none" stroke="#0000ff" stroke-width="0.35">
+          ${scorePaths.map(d => `<path d="${d}"/>`).join('\n          ')}
+        </g>
+        <g id="DECOUPE_LASER" fill="none" stroke="#ff0000" stroke-width="0.35">
+          ${cutPaths.map(d => `<path d="${d}"/>`).join('\n          ')}
+        </g>
+        ${labelElements}
+      </svg>`;
+    }
+
+    function renderFlatCAD() {
+      const container = document.getElementById('cad-single-module-container');
+      if (!container) return;
+      container.innerHTML = generateModuleSVG(1, false);
+    }
+
+    function downloadModuleSVG(count) {
+      const s = getModuleSpecs();
+      const svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n' + generateModuleSVG(count, true);
+      const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = count === 1
+        ? `Test_1_Module_DoubleFente_SansRail_${s.extL}x${s.extW}x${s.ringH}mm.svg`
+        : `Planche_6_Modules_DoubleFente_xTool_S1.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const toast = document.getElementById('toast');
+      const txt = document.getElementById('toast-text');
+      if (toast && txt) {
+        txt.textContent = count === 1
+          ? 'SVG du module à double fente (sans rail) téléchargé !'
+          : 'Planche de 6 modules (sans rail) téléchargée !';
+        toast.classList.remove('hidden');
+        toast.classList.add('flex');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+          toast.classList.remove('flex');
+        }, 3000);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateAll();
+    });
+  </script>
+</body>
+</html>
